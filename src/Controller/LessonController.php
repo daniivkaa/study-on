@@ -17,16 +17,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class LessonController extends AbstractController
 {
     /**
-     * @Route("/", name="lesson_index", methods={"GET"})
-     */
-    public function index(LessonRepository $lessonRepository): Response
-    {
-        return $this->render('lesson/index.html.twig', [
-            'lessons' => $lessonRepository->findAll(),
-        ]);
-    }
-
-    /**
      * @Route("/new/{course}", name="lesson_new", methods={"GET","POST"})
      */
     public function new(Request $request, Course $course): Response
@@ -47,7 +37,8 @@ class LessonController extends AbstractController
 
         return $this->render('lesson/new.html.twig', [
             'lesson' => $lesson,
-            'form' => $form->createView(),
+            'lessonForm' => $form->createView(),
+            'course'    => $course,
         ]);
     }
 
@@ -77,7 +68,7 @@ class LessonController extends AbstractController
 
         return $this->render('lesson/edit.html.twig', [
             'lesson' => $lesson,
-            'form' => $form->createView(),
+            'lessonForm' => $form->createView(),
         ]);
     }
 

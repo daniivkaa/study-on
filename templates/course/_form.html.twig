@@ -1,4 +1,15 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
-{{ form_end(form) }}
+{{ form_start(courseForm) }}
+    <div class="mb-3">
+        {{ form_row(courseForm.name, {'attr': {label: 'Название курса', 'class': 'form-control'}}) }}
+        <div id="help" class="form-text">Название должно быть не менее 5 символов</div>
+    </div>
+    <div class="mb-3">
+        {{ form_row(courseForm.description, {'attr': {label: 'Описание курса', 'class': 'form-control'}}) }}
+        <div id="help" class="form-text">Описание должно быть не менее 10 символов</div>
+    </div>
+    <div class="mb-3">
+        {{ form_row(courseForm.code, {'attr': {label: 'Код курса', 'class': 'form-control'}}) }}
+        <div id="help" class="form-text">Код должен быть не менее 3 символов</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Отправить</button>
+{{ form_end(courseForm) }}

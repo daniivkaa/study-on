@@ -3,20 +3,14 @@
 <html lang="ru">
     <head>
         <meta charset="UTF-8" />
-        <title>{% block title %}ЧайШоп{% endblock %}</title>
-        <link
-                rel="stylesheet"
-                href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-        />
-        {% block stylesheets %}{% endblock %}
+        <title>{% block title %}Site{% endblock %}</title>
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light" style="height: 70px;">
-            <a class="navbar-brand" href="{{ path('course_index') }}">Гость</a>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent"></div>
-            <ul class="nav navbar-nav navbar-right">
-            </ul>
-        </nav>
-        {% block body %}{% endblock %} {% block javascripts %}{% endblock %}
+        {% block body %}{% endblock %}
+            {{ encore_entry_script_tags('app') }}
+        {% block javascripts %}{% endblock %}
     </body>
 </html>

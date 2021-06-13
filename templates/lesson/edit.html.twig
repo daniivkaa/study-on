@@ -3,11 +3,13 @@
 {% block title %}Edit Lesson{% endblock %}
 
 {% block body %}
-    <h1>Edit Lesson</h1>
+    <div class = "container mb-3">
+        <h1 class = "text-center">Обновить урок</h1>
 
-    {{ include('lesson/_form.html.twig', {'button_label': 'Update'}) }}
+        {{ include('lesson/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('lesson_index') }}">back to list</a>
+        <a class="btn btn-primary mt-3" href="{{ path('course_show', {'id' : lesson.course.id}) }}">Вернуться на курс</a>
 
-    {{ include('lesson/_delete_form.html.twig') }}
+        {{ include('lesson/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

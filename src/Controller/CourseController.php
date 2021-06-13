@@ -44,7 +44,7 @@ class CourseController extends AbstractController
 
         return $this->render('course/new.html.twig', [
             'course' => $course,
-            'form' => $form->createView(),
+            'courseForm' => $form->createView(),
         ]);
     }
 
@@ -74,7 +74,7 @@ class CourseController extends AbstractController
 
         return $this->render('course/edit.html.twig', [
             'course' => $course,
-            'form' => $form->createView(),
+            'courseForm' => $form->createView(),
         ]);
     }
 
