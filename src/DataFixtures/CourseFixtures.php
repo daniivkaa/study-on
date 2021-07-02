@@ -93,7 +93,6 @@ class CourseFixtures extends Fixture
                 $itemLesson = $lesson[$i];
 
                 $lessonKey = $i - $courseKey * 3;
-
                 $itemLesson->setName($lessons[$courseKey]['names'][$lessonKey]);
                 $itemLesson->setContent($lessons[$courseKey]['contents'][$lessonKey]);
                 $itemLesson->setNumber($lessonKey + 1);
