@@ -68,4 +68,13 @@ class CourseTest extends AbstractTest
         AbstractTest::assertResponseNotFound();
 
     }
+
+    public function testNewPost(): void
+    {
+        $client = AbstractTest::getClient();
+        $crawler = $client->request('GET', "http://study-on.local:81/coursexdfh/");
+
+        AbstractTest::assertResponseNotFound();
+
+    }
 }
