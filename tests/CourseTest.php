@@ -5,6 +5,7 @@ namespace App\Tests;
 use App\Entity\Course;
 use App\Entity\Lesson;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Form\CourseType;
 
 class CourseTest extends AbstractTest
 {
@@ -69,12 +70,228 @@ class CourseTest extends AbstractTest
 
     }
 
-    public function testNewPost(): void
+    public function testFormNewError(): void
     {
-        $client = AbstractTest::getClient();
-        $crawler = $client->request('GET', "http://study-on.local:81/coursexdfh/");
+        $url = 'http://study-on.local:81/course';
 
-        AbstractTest::assertResponseNotFound();
+        $client = AbstractTest::getClient();
+        $client->followRedirects();
+
+        for($i = 0; $i  < 100; $i++) {
+            $crawler = $client->request('GET', $url);
+            //$this->assertResponseOk();
+
+            $link = $crawler->selectLink('Создать курс')->link();
+            $crawler = $client->click($link);
+            //$this->assertResponseOk();
+
+            $form = $crawler->filter('form')->form();
+
+            $name = $this->generateRandomString(rand(1, 10));
+            $description = $this->generateRandomString(rand(1, 20));
+            $code = $this->generateRandomString(rand(1, 7));
+
+            $form->setValues(array(
+                "course[name]" => $name,
+                "course[description]" => $description,
+                "course[code]" => $code
+            ));
+
+            $crawler = $client->submit($form);
+            if(strlen($name) < 5 && strlen($description) >= 10 && strlen($code) >= 3){
+                $messege = $crawler->filter('li')->eq(0)->text();
+                $this->assertSame('Название должно быть больше 5 символов', $messege);
+            }
+            if(strlen($description) < 10 && strlen($name) >= 5 && strlen($code) >= 3){
+                $messege = $crawler->filter('form .mb-3 div ul li')->eq(0)->text();
+                $this->assertSame('Описание должно быть больше 10 символов', $messege);
+            }
+            if(strlen($code) < 3 && strlen($name) >= 5 && strlen($description) >= 10){
+                $messege = $crawler->filter('form .mb-3 div ul li')->eq(0)->text();
+                $this->assertSame('код должен быть больше 3 символов', $messege);
+            }
+
+            if(strlen($name) < 5 && strlen($description) < 10 && strlen($code) >= 3){
+                $messege = $crawler->filter('li')->eq(0)->text();
+                $this->assertSame('Название должно быть больше 5 символов', $messege);
+
+                $messege = $crawler->filter('li')->eq(1)->text();
+                $this->assertSame('Описание должно быть больше 10 символов', $messege);
+            }
+
+            if(strlen($name) < 5 && strlen($description) >= 10 && strlen($code) < 3){
+                $messege = $crawler->filter('li')->eq(0)->text();
+                $this->assertSame('Название должно быть больше 5 символов', $messege);
+
+                $messege = $crawler->filter('li')->eq(1)->text();
+                $this->assertSame('код должен быть больше 3 символов', $messege);
+            }
+
+            if(strlen($name) >= 5 && strlen($description) < 10 && strlen($code) < 3){
+                $messege = $crawler->filter('li')->eq(0)->text();
+                $this->assertSame('Описание должно быть больше 10 символов', $messege);
+
+                $messege = $crawler->filter('li')->eq(1)->text();
+                $this->assertSame('код должен быть больше 3 символов', $messege);
+            }
+
+            if(strlen($name) < 5 && strlen($description) < 10 && strlen($code) < 3){
+                $messege = $crawler->filter('li')->eq(0)->text();
+                $this->assertSame('Название должно быть больше 5 символов', $messege);
+
+                $messege = $crawler->filter('li')->eq(1)->text();
+                $this->assertSame('Описание должно быть больше 10 символов', $messege);
+
+                $messege = $crawler->filter('li')->eq(2)->text();
+                $this->assertSame('код должен быть больше 3 символов', $messege);
+            }
+        }
+    }
+
+    public function testFormNewOk(): void
+    {
+        $em = AbstractTest::getEntityManager();
+        $countCourse = count($em->getRepository(Course::class)->findAll());
+
+        $client = AbstractTest::getClient();
+        $url = 'http://study-on.local:81/course/';
+
+        $crawler = $client->request('GET', $url);
+        $this->assertResponseOk();
+        $link = $crawler->selectLink('Создать курс')->link();
+        $crawler = $client->click($link);
+        $this->assertResponseOk();
+        $form = $crawler->filter('form')->form();
+
+        $form->setValues(array(
+            "course[name]" => "Namedh",
+            "course[description]"  => "Description testd",
+            "course[code]" => "222",
+        ));
+
+        $crawler = $client->submit($form);
+        $this->assertResponseRedirect();
+        $crawler = $client->followRedirect();
+        $this->assertSame('http://study-on.local:81/course/', $crawler->getUri());
+
+        $countCourseNew = count($em->getRepository(Course::class)->findAll());
+        $this->assertEquals($countCourse + 1, $countCourseNew);
 
     }
+
+    public function testFormDeleteOk(): void
+    {
+        $em = AbstractTest::getEntityManager();
+        $countCourse = count($em->getRepository(Course::class)->findAll());
+
+        $client = AbstractTest::getClient();
+        $url = 'http://study-on.local:81/course/';
+
+        $crawler = $client->request('GET', $url);
+        $this->assertResponseOk();
+        $link = $crawler->selectLink('Подробнее')->link();
+        $crawler = $client->click($link);
+        $this->assertResponseOk();
+        $form = $crawler->filter('form')->form();
+
+
+        $crawler = $client->submit($form);
+        $this->assertResponseRedirect();
+        $crawler = $client->followRedirect();
+        $this->assertSame('http://study-on.local:81/course/', $crawler->getUri());
+
+        $countCourseNew = count($em->getRepository(Course::class)->findAll());
+        $this->assertEquals($countCourse - 1, $countCourseNew);
+
+    }
+
+    public function testFormEditOk(): void
+    {
+        $client = AbstractTest::getClient();
+        $url = 'http://study-on.local:81/course/';
+
+        $crawler = $client->request('GET', $url);
+        $this->assertResponseOk();
+        $link = $crawler->selectLink('Подробнее')->link();
+        $crawler = $client->click($link);
+        $this->assertResponseOk();
+
+        $uri = $crawler->getUri();
+        $segments = explode('/', $uri);
+        $id = $segments[5];
+
+        $link = $crawler->selectLink('Обновить курс')->link();
+        $crawler = $client->click($link);
+        $this->assertResponseOk();
+        $form = $crawler->filter('form')->form();
+
+        $form->setValues(array(
+            "course[name]" => "Новое название",
+            "course[description]"  => "Новое описание",
+            "course[code]" => "2222",
+        ));
+
+        $crawler = $client->submit($form);
+        $this->assertResponseRedirect();
+        $crawler = $client->followRedirect();
+        $this->assertSame("http://study-on.local:81/course/show/$id", $crawler->getUri());
+
+        $em = AbstractTest::getEntityManager();
+        $course= $em->getRepository(Course::class)->find($id);
+        $this->assertSame("Новое название", $course->getName());
+        $this->assertSame("Новое описание", $course->getDescription());
+        $this->assertSame("2222", $course->getCode());
+    }
+
+    public function testFormEditError(): void
+    {
+        $client = AbstractTest::getClient();
+        $url = 'http://study-on.local:81/course/';
+
+        $crawler = $client->request('GET', $url);
+        $this->assertResponseOk();
+        $link = $crawler->selectLink('Подробнее')->link();
+        $crawler = $client->click($link);
+        $this->assertResponseOk();
+
+        $uri = $crawler->getUri();
+        $segments = explode('/', $uri);
+        $id = $segments[5];
+
+        $em = $this->getEntityManager();
+        $course= $em->getRepository(Course::class)->find($id);
+        $name = $course->getName();
+        $description = $course->getDescription();
+        $code = $course->getCode();
+
+        $link = $crawler->selectLink('Обновить курс')->link();
+        $crawler = $client->click($link);
+        $this->assertResponseOk();
+        $form = $crawler->filter('form')->form();
+
+        $form->setValues(array(
+            "course[name]" => "Н",
+            "course[description]"  => "Н",
+            "course[code]" => "2",
+        ));
+
+        $crawler = $client->submit($form);
+
+        $messege = $crawler->filter('li')->eq(0)->text();
+        $this->assertSame('Название должно быть больше 5 символов', $messege);
+
+        $messege = $crawler->filter('li')->eq(1)->text();
+        $this->assertSame('Описание должно быть больше 10 символов', $messege);
+
+        $messege = $crawler->filter('li')->eq(2)->text();
+        $this->assertSame('код должен быть больше 3 символов', $messege);
+
+        $course= $em->getRepository(Course::class)->find($id);
+
+        $this->assertSame($name, $course->getName());
+        $this->assertSame($description, $course->getDescription());
+        $this->assertSame($code, $course->getCode());
+    }
+
+
 }
