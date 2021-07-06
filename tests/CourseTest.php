@@ -77,75 +77,48 @@ class CourseTest extends AbstractTest
         $client = AbstractTest::getClient();
         $client->followRedirects();
 
-        for($i = 0; $i  < 100; $i++) {
-            $crawler = $client->request('GET', $url);
-            //$this->assertResponseOk();
 
-            $link = $crawler->selectLink('Создать курс')->link();
-            $crawler = $client->click($link);
-            //$this->assertResponseOk();
+        $crawler = $client->request('GET', $url);
+        $this->assertResponseOk();
 
-            $form = $crawler->filter('form')->form();
+        $link = $crawler->selectLink('Создать курс')->link();
+        $crawler = $client->click($link);
+        $this->assertResponseOk();
 
-            $name = $this->generateRandomString(rand(1, 10));
-            $description = $this->generateRandomString(rand(1, 20));
-            $code = $this->generateRandomString(rand(1, 7));
+        $form = $crawler->filter('form')->form();
 
-            $form->setValues(array(
-                "course[name]" => $name,
-                "course[description]" => $description,
-                "course[code]" => $code
-            ));
 
-            $crawler = $client->submit($form);
-            if(strlen($name) < 5 && strlen($description) >= 10 && strlen($code) >= 3){
-                $messege = $crawler->filter('li')->eq(0)->text();
-                $this->assertSame('Название должно быть больше 5 символов', $messege);
-            }
-            if(strlen($description) < 10 && strlen($name) >= 5 && strlen($code) >= 3){
-                $messege = $crawler->filter('form .mb-3 div ul li')->eq(0)->text();
-                $this->assertSame('Описание должно быть больше 10 символов', $messege);
-            }
-            if(strlen($code) < 3 && strlen($name) >= 5 && strlen($description) >= 10){
-                $messege = $crawler->filter('form .mb-3 div ul li')->eq(0)->text();
-                $this->assertSame('код должен быть больше 3 символов', $messege);
-            }
+        $form->setValues(array(
+            "course[name]" => "P",
+            "course[description]" => "P",
+            "course[code]" => 1
+        ));
 
-            if(strlen($name) < 5 && strlen($description) < 10 && strlen($code) >= 3){
-                $messege = $crawler->filter('li')->eq(0)->text();
-                $this->assertSame('Название должно быть больше 5 символов', $messege);
+        $crawler = $client->submit($form);
 
-                $messege = $crawler->filter('li')->eq(1)->text();
-                $this->assertSame('Описание должно быть больше 10 символов', $messege);
-            }
+        $messege = $crawler->filter('li')->eq(0)->text();
+        $this->assertSame('Название должно быть больше 5 символов', $messege);
 
-            if(strlen($name) < 5 && strlen($description) >= 10 && strlen($code) < 3){
-                $messege = $crawler->filter('li')->eq(0)->text();
-                $this->assertSame('Название должно быть больше 5 символов', $messege);
+        $messege = $crawler->filter('li')->eq(1)->text();
+        $this->assertSame('Описание должно быть больше 10 символов', $messege);
 
-                $messege = $crawler->filter('li')->eq(1)->text();
-                $this->assertSame('код должен быть больше 3 символов', $messege);
-            }
+        $messege = $crawler->filter('li')->eq(2)->text();
+        $this->assertSame('код должен быть больше 3 символов', $messege);
 
-            if(strlen($name) >= 5 && strlen($description) < 10 && strlen($code) < 3){
-                $messege = $crawler->filter('li')->eq(0)->text();
-                $this->assertSame('Описание должно быть больше 10 символов', $messege);
+        $form = $crawler->filter('form')->form();
 
-                $messege = $crawler->filter('li')->eq(1)->text();
-                $this->assertSame('код должен быть больше 3 символов', $messege);
-            }
 
-            if(strlen($name) < 5 && strlen($description) < 10 && strlen($code) < 3){
-                $messege = $crawler->filter('li')->eq(0)->text();
-                $this->assertSame('Название должно быть больше 5 символов', $messege);
+        $form->setValues(array(
+            "course[name]" => "Новое имя курса",
+            "course[description]" => "Новое описание к курсу",
+            "course[code]" => "2362623"
+        ));
 
-                $messege = $crawler->filter('li')->eq(1)->text();
-                $this->assertSame('Описание должно быть больше 10 символов', $messege);
+        $crawler = $client->submit($form);
 
-                $messege = $crawler->filter('li')->eq(2)->text();
-                $this->assertSame('код должен быть больше 3 символов', $messege);
-            }
-        }
+        $messege = $crawler->filter('li')->eq(0)->text();
+        $this->assertSame('Курс с таким кодом уже существует', $messege);
+
     }
 
     public function testFormNewOk(): void
@@ -291,6 +264,20 @@ class CourseTest extends AbstractTest
         $this->assertSame($name, $course->getName());
         $this->assertSame($description, $course->getDescription());
         $this->assertSame($code, $course->getCode());
+
+        $form = $crawler->filter('form')->form();
+
+
+        $form->setValues(array(
+            "course[name]" => "Новое имя курса",
+            "course[description]" => "Новое описание к курсу",
+            "course[code]" => "2362623"
+        ));
+
+        $crawler = $client->submit($form);
+
+        $messege = $crawler->filter('li')->eq(0)->text();
+        $this->assertSame('Курс с таким кодом уже существует', $messege);
     }
 
 
