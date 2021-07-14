@@ -16,7 +16,9 @@
 
     <a class="btn btn-primary mt-3" href="{{ path('course_show', {'id' : lesson.course.id}) }}">Вернуться на курс</a>
 
-    <a class="btn btn-primary mt-3" href="{{ path('lesson_edit', {'id': lesson.id}) }}">Обновить урок</a>
+    {% if is_granted('ROLE_SUPER_ADMIN') %}
+        <a class="btn btn-primary mt-3" href="{{ path('lesson_edit', {'id': lesson.id}) }}">Обновить урок</a>
 
-    {{ include('lesson/_delete_form.html.twig') }}
+        {{ include('lesson/_delete_form.html.twig') }}
+    {% endif %}
 {% endblock %}
