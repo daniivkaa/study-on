@@ -69,10 +69,11 @@ class SecurityController extends AbstractController
     public function register(Request $request, UserAuthenticatorInterface $authenticator, BillingAuthenticator $formAuthenticator): Response
     {
         if($this->getUser()){
-            return $this->redirectToRoute('course_index');
+            return $this->redirectToRoute('app_profile');
         }
 
         $user = new User();
+        $errors = [];
 
         $registrationForm = $this->createForm(RegisterType::class, null);
 
@@ -86,16 +87,20 @@ class SecurityController extends AbstractController
                 'password' => $data['password']
             ];
 
-            $user = $this->billingClient->register($credentials, $user);
+            $response = $this->billingClient->register($credentials, $user);
+            if($response instanceof User){
+                return $authenticator->authenticateUser(
+                    $response,
+                    $formAuthenticator,
+                    $request);
+            }
 
-            return $authenticator->authenticateUser(
-                $user,
-                $formAuthenticator,
-                $request);
+            $errors = $response;
         }
 
         return $this->render('security/register.html.twig', [
             'registrationForm' => $registrationForm->createView(),
+            'errors' => $errors,
         ]);
     }
 }

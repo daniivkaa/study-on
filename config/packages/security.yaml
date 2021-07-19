@@ -9,13 +9,12 @@ security:
         main:
             lazy: true
             custom_authenticator: App\Security\BillingAuthenticator
-            logout:
-                path: app_logout
             remember_me:
                 secret: '%kernel.secret%'
-                lifetime: 604800 # 1 week in seconds
+                lifetime: 31536000 # 1 week in seconds
                 path: /
-                always_remember_me: true
+            logout:
+                path: app_logout
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#firewalls-authentication

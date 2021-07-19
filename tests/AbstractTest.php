@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use App\DataFixtures\AppFixtures;
 use App\DataFixtures\CourseFixtures;
-use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\Executor\ORMExecutor;
 use Doctrine\Common\DataFixtures\Loader;
 use Doctrine\Common\DataFixtures\Purger\ORMPurger;
@@ -27,10 +25,21 @@ abstract class AbstractTest extends WebTestCase
     {
         if (!static::$client || $reinitialize) {
             static::$client = static::createClient($options, $server);
+
+            $client = static::$client;
+
+            $client->disableReboot();
+
+
+            $client->getContainer()->set(
+                'App\Service\BillingClient',
+                new BillingClientMock()
+            );
         }
 
         // core is loaded (for tests without calling of getClient(true))
         static::$client->getKernel()->boot();
+
 
         return static::$client;
     }
@@ -202,13 +211,21 @@ abstract class AbstractTest extends WebTestCase
         return preg_replace('#[\n\r]+#', ' ', $text);
     }
 
-    public function generateRandomString($length = 16, $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    public function doAuth(&$client, string $email, string $pass)
     {
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
+        $crawler = $client->request('GET', '/login');
+
+        $form = $crawler->filter('form')->form();
+
+
+        $form->setValues(array(
+            "email" => $email,
+            "password" => $pass,
+        ));
+
+        $crawler = $client->submit($form);
+
+
+        return $crawler;
     }
 }

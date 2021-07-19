@@ -7,9 +7,17 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use App\Service\BillingClient;
 
 class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 {
+
+    private BillingClient $billingClient;
+
+    public function __construct(BillingClient $billingClient)
+    {
+        $this->billingClient = $billingClient;
+    }
     /**
      * Symfony calls this method if you use features like switch_user
      * or remember_me.
@@ -21,10 +29,12 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function loadUserByIdentifier($identifier): UserInterface
     {
-
         $user = new User();
-        $user->setEmail($identifier);
-
+        $user->setRefreshToken($identifier);
+        $token = $this->billingClient->refreshToken($user);
+        $user->setApiToken($token['token']);
+        $user->setRefreshToken($token['refresh_token']);
+        $user = $this->billingClient->getUserByToken($user);
 
         return $user;
         // Load a User object from your data source or throw UserNotFoundException.
@@ -61,7 +71,16 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             throw new UnsupportedUserException(sprintf('Invalid user class "%s".', get_class($user)));
         }
 
-        var_dump($user);
+        $jwtPayload = $this->billingClient->getPayload($user->getApiToken());
+
+        $expDateTime = date('Y-m-d H:i:s', $jwtPayload->exp);
+        $currentDateTime = date('Y-m-d H:i:s', time());
+
+        if ($expDateTime < $currentDateTime) {
+            $user->setApiToken($this->billingClient->refreshToken($user)['token']);
+            $user->setRefreshToken($this->billingClient->refreshToken($user)['refresh_token']);
+        }
+
 
         return $user;
         // Return a User object after making sure its data is "fresh".

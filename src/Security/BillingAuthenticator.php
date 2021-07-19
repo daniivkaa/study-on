@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 use App\Service\BillingClient;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -16,8 +17,10 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\PassportInterface;
+use Symfony\Component\Security\Http\RememberMe\RememberMeHandlerInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 
 class BillingAuthenticator extends AbstractLoginFormAuthenticator
 {
@@ -28,6 +31,7 @@ class BillingAuthenticator extends AbstractLoginFormAuthenticator
     private UrlGeneratorInterface $urlGenerator;
 
     private BillingClient $billingClient;
+    private $errors = [];
 
     public function __construct(UrlGeneratorInterface $urlGenerator, BillingClient $billingClient)
     {
@@ -47,22 +51,34 @@ class BillingAuthenticator extends AbstractLoginFormAuthenticator
             'password' => $password,
         ];
 
+        $identifier = json_encode($credentials);
+
         $checkUser = function ($credentials, $user){
-            $user = $this->billingClient->login($credentials, $user);
-            if($user->getApiToken() !== null){
-                return true;
-            }
-            return false;
+            //throw new AuthenticationException('hi');
+            return true;
         };
 
-        return new Passport(
-            new UserBadge($email),
-            new CustomCredentials($checkUser, $credentials),
+        $loadUser = function ($identifier) {
+            $credentials = json_decode($identifier, true);
+            $user = $this->billingClient->login($credentials);
+            if(is_array($user)){
+                $this->errors = $user;
+                return new User();
+            }
+            return $user;
+        };
+
+
+        $passport = new Passport(
+            new UserBadge($identifier, $loadUser),
+            new CustomCredentials($checkUser, $credentials['email']),
             [
                 new CsrfTokenBadge('authenticate', $request->get('_csrf_token')),
                 new RememberMeBadge(),
+
             ]
         );
+        return $passport;
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
@@ -79,10 +95,5 @@ class BillingAuthenticator extends AbstractLoginFormAuthenticator
     protected function getLoginUrl(Request $request): string
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
-    }
-
-    public function checrer(): bool
-    {
-        return true;
     }
 }
