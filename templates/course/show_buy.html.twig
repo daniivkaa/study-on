@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Course{% endblock %}
+
+{% block body %}
+    <h1>{{ courseName }}</h1>
+    <h2>{{ status }}</h2>
+    {% if disabled %}
+        <a class="btn btn-primary mt-3 disabled" href="{{ path('course_pay', {id: courseId})}}">Купить курс</a>
+    {% else %}
+        <a class="btn btn-primary mt-3" href="{{ path('course_pay', {id: courseId})}}">Купить курс</a>
+    {% endif %}
+    <a class="btn btn-primary mt-3" href="{{ path('course_index') }}">Вернуться к списку курсов</a>
+
+
+{% endblock %}

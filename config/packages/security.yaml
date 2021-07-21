@@ -31,7 +31,6 @@ security:
          - { path: ^/lesson/edit, roles: ROLE_SUPER_ADMIN }
          - { path: ^/lesson/new, roles: ROLE_SUPER_ADMIN }
          - { path: ^/lesson/delete, roles: ROLE_SUPER_ADMIN }
-         - { path: ^/course, roles: ROLE_USER }
          - { path: ^/lesson, roles: ROLE_USER }
          - { path: ^/profile, roles: ROLE_USER }
 

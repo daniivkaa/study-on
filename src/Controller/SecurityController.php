@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Security\BillingAuthenticator;
+use App\Service\BillingTransaction;
 use Symfony\Component\HttpFoundation\Request;
 use App\Form\RegisterType;
 use App\Security\User;
@@ -17,10 +18,12 @@ class SecurityController extends AbstractController
 {
 
     private BillingClient $billingClient;
+    private BillingTransaction $billingTransaction;
 
-    public function __construct(BillingClient $billingClient)
+    public function __construct(BillingClient $billingClient, BillingTransaction $billingTransaction)
     {
         $this->billingClient = $billingClient;
+        $this->billingTransaction = $billingTransaction;
     }
     /**
      * @Route("/login", name="app_login")
@@ -55,10 +58,12 @@ class SecurityController extends AbstractController
         $user = $this->getUser();
 
         $balance = $this->billingClient->getBalance($user);
+        $transactions = $this->billingTransaction->getTransactions($user->getApiToken());
 
         return $this->render('security/profile.html.twig', [
             'user' => $user,
             'balance' => $balance,
+            'transactions' => $transactions,
         ]);
 
     }

@@ -13,6 +13,12 @@
         <div class="card-footer text-muted">
             Код:{{ course.code }}
         </div>
+        <div class="card-footer text-muted">
+            Цена:{{ courseInf["price"] }}
+        </div>
+        <div class="card-footer text-muted">
+            Тип:{{ courseInf["type"] }}
+        </div>
     </div>
 
     <a class="btn btn-primary mt-3" href="{{ path('course_index') }}">Вернуться к списку курсов</a>
