@@ -63,6 +63,27 @@ class BillingCourse
         return $result;
     }
 
+    public function courseEdit(array $data, int $code){
+        $url = $_ENV['BILLING_URL'] . '/api/v1/courses/edit/' . $code;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+        ]);
+
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        $result = json_decode($result, true);
+
+        return $result;
+    }
+
     public function deleteCourse(string $token = null, string $code){
         $url = $_ENV['BILLING_URL'] . '/api/v1/courses/delete/' . $code;
 

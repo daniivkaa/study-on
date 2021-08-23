@@ -47,9 +47,11 @@ class CourseType extends AbstractType
             ])
             ->add('price', TextType::class, [
                 'label' => "Цена",
+                'mapped' => false,
             ])
             ->add('type', IntegerType::class, [
                 'label' => "Тип",
+                'mapped' => false,
             ])
         ;
     }

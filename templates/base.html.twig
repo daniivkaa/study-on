@@ -12,6 +12,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ path('course_index') }}">Study-On</a>
+            <a class="btn btn-outline-primary mx-3" type="submit" href="{{ path('app_profile') }}">Профиль</a>
                 <div class="d-flex">
                     {% if is_granted('ROLE_USER') %}
                         <a class="btn btn-outline-primary mx-3" type="submit" href="{{ path('app_logout') }}">Выйти</a>

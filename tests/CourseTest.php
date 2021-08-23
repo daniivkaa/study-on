@@ -131,7 +131,7 @@ class CourseTest extends AbstractTest
         $form->setValues(array(
             "course[name]" => "Новое имя курса",
             "course[description]" => "Новое описание к курсу",
-            "course[code]" => "2362623"
+            "course[code]" => "11111"
         ));
 
         $crawler = $client->submit($form);
@@ -305,7 +305,7 @@ class CourseTest extends AbstractTest
         $form->setValues(array(
             "course[name]" => "Новое имя курса",
             "course[description]" => "Новое описание к курсу",
-            "course[code]" => "2362623"
+            "course[code]" => "22222"
         ));
 
         $crawler = $client->submit($form);
@@ -321,6 +321,4 @@ class CourseTest extends AbstractTest
         $this->assertSame($description, $course->getDescription());
         $this->assertSame($code, $course->getCode());
     }
-
-
 }

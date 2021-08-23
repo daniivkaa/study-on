@@ -35,6 +35,10 @@ abstract class AbstractTest extends WebTestCase
                 'App\Service\BillingClient',
                 new BillingClientMock()
             );
+            $client->getContainer()->set(
+                'App\Service\BillingCourse',
+                new BillingCourseMock()
+            );
         }
 
         // core is loaded (for tests without calling of getClient(true))

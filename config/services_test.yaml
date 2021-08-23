@@ -26,3 +26,6 @@ services:
   App\Service\BillingClient:
     public: true
     lazy: true
+  App\Service\BillingCourse:
+    public: true
+    lazy: true

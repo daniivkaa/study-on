@@ -56,14 +56,10 @@ class CourseController extends AbstractController
     public function new(Request $request): Response
     {
         $course = new Course();
-        $form = $this->createForm(CourseType::class, null);
+        $form = $this->createForm(CourseType::class, $course);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $course->setName($form->get('name')->getData());
-            $course->setDescription($form->get('description')->getData());
-            $course->setCode($form->get('code')->getData());
-
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($course);
             $entityManager->flush();
@@ -73,6 +69,7 @@ class CourseController extends AbstractController
                 "code" => $form->get('code')->getData(),
                 "price" => $form->get('price')->getData(),
                 "type" => $form->get('type')->getData(),
+                "title" => $form->get('name')->getData(),
             ];
 
             $error = $this->billingCourse->courseCreate($data);
@@ -114,6 +111,15 @@ class CourseController extends AbstractController
         else{
             $balance = $this->billingClient->getBalance($this->getUser());
             $disabled = false;
+            $buttonTitle = "";
+
+            if($courseInformation['type'] == 1){
+                $buttonTitle = "Купить курс";
+            }
+            else if($courseInformation['type'] == 2){
+                $buttonTitle = "Арендовать курс";
+            }
+
             if($courseInformation['price'] > $balance){
                 $disabled = true;
             }
@@ -121,7 +127,8 @@ class CourseController extends AbstractController
                 'status' => $check['message'],
                 'courseId' => $course->getId(),
                 'courseName' => $course->getName(),
-                "disabled" => $disabled
+                "disabled" => $disabled,
+                "buttonTitle" => $buttonTitle
             ]);
         }
     }
@@ -131,11 +138,22 @@ class CourseController extends AbstractController
      */
     public function edit(Request $request, Course $course): Response
     {
+        $code = $course->getCode();
         $form = $this->createForm(CourseType::class, $course);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getDoctrine()->getManager()->flush();
+
+            $data = [
+                "token" => $this->getUser()->getApiToken(),
+                "code" => $form->get('code')->getData(),
+                "price" => $form->get('price')->getData(),
+                "type" => $form->get('type')->getData(),
+                "title" => $form->get('name')->getData(),
+            ];
+
+            $error = $this->billingCourse->courseEdit($data, $code);
 
             return $this->redirectToRoute('course_show', ['id' =>$course->getId()]);
         }
